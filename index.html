@@ -1,2 +1,315 @@
 <!DOCTYPE html>
-<h1>P mabarr</h1>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Pixel 2D AUVAR</title>
+    <!-- Memuat font pixel -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Press Start 2P', cursive;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            color: #FFD700;
+            text-shadow: 2px 2px #000;
+        }
+
+        p {
+            font-size: 0.7rem;
+            line-height: 1.5;
+        }
+
+        canvas {
+            background-color: #87CEEB; /* Warna langit */
+            border: 4px solid #000;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            
+            /* Membuat tampilan pixel tetap tajam */
+            image-rendering: -moz-crisp-edges;
+            image-rendering: -webkit-crisp-edges;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            
+            cursor: crosshair;
+        }
+
+        #hotbar {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            background-color: rgba(0,0,0,0.3);
+            padding: 5px;
+            border-radius: 5px;
+            border: 2px solid #555;
+        }
+
+        .slot {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #fff;
+            margin: 3px;
+            cursor: pointer;
+            background-size: cover;
+            
+            /* Efek 3D sederhana */
+            border-top-color: #eee;
+            border-left-color: #eee;
+            border-bottom-color: #777;
+            border-right-color: #777;
+        }
+
+        .slot.selected {
+            border: 3px solid #FFD700; /* Warna emas untuk seleksi */
+            box-shadow: 0 0 10px #FFD700;
+            transform: scale(1.1);
+            transition: all 0.1s ease;
+        }
+    </style>
+</head>
+<body>
+    <h1>Game Pixel 2D</h1>
+    <p>Klik Kiri: Hancurkan Balok | Klik Kanan: Pasang Balok</p>
+    
+    <!-- Kanvas untuk game -->
+    <canvas id="gameCanvas"></canvas>
+    
+    <!-- Hotbar untuk memilih balok -->
+    <div id="hotbar"></div>
+
+    <script>
+        window.onload = function() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const hotbar = document.getElementById('hotbar');
+
+            // Pengaturan Game
+            const blockSize = 20;
+            
+            // Sesuaikan ukuran canvas dengan jendela, tetapi jaga kelipatan blockSize
+            canvas.width = Math.floor((window.innerWidth * 0.8) / blockSize) * blockSize;
+            canvas.height = Math.floor((window.innerHeight * 0.6) / blockSize) * blockSize;
+
+            const numCols = canvas.width / blockSize;
+            const numRows = canvas.height / blockSize;
+
+            // Definisi Tipe Balok
+            const BLOCK_TYPES = {
+                SKY: 0,
+                GRASS: 1,
+                DIRT: 2,
+                STONE: 3,
+                WOOD: 4,
+                LEAVES: 5
+            };
+
+            // Warna Balok
+            const blockColors = {
+                [BLOCK_TYPES.SKY]: '#87CEEB',
+                [BLOCK_TYPES.GRASS]: '#228B22',
+                [BLOCK_TYPES.DIRT]: '#8B4513',
+                [BLOCK_TYPES.STONE]: '#808080',
+                [BLOCK_TYPES.WOOD]: '#5C4033',
+                [BLOCK_TYPES.LEAVES]: '#006400'
+            };
+            
+            // Balok yang bisa ditempatkan
+            const placeableBlocks = [
+                BLOCK_TYPES.DIRT, 
+                BLOCK_TYPES.STONE, 
+                BLOCK_TYPES.WOOD, 
+                BLOCK_TYPES.LEAVES,
+                BLOCK_TYPES.GRASS
+            ];
+
+            let world = [];
+            let currentBlockType = placeableBlocks[0]; // Mulai dengan DIRT
+
+            // --- Inisialisasi Game ---
+
+            function init() {
+                // Nonaktifkan anti-aliasing untuk seni pixel
+                ctx.imageSmoothingEnabled = false;
+
+                generateWorld();
+                createHotbar();
+                
+                // Tambahkan event listener
+                canvas.addEventListener('mousedown', handleMouse);
+                canvas.addEventListener('mousemove', handleMouse);
+                // Mencegah menu konteks klik kanan muncul
+                canvas.addEventListener('contextmenu', e => e.preventDefault());
+
+                drawWorld();
+            }
+
+            // --- Logika Dunia ---
+
+            function generateWorld() {
+                world = new Array(numRows).fill(0).map(() => new Array(numCols).fill(BLOCK_TYPES.SKY));
+
+                const grassLevel = Math.floor(numRows / 2);
+                const stoneLevel = grassLevel + 5;
+
+                for (let row = 0; row < numRows; row++) {
+                    for (let col = 0; col < numCols; col++) {
+                        if (row < grassLevel) {
+                            world[row][col] = BLOCK_TYPES.SKY;
+                        } else if (row === grassLevel) {
+                            world[row][col] = BLOCK_TYPES.GRASS;
+                        } else if (row > grassLevel && row < stoneLevel) {
+                            world[row][col] = BLOCK_TYPES.DIRT;
+                        } else if (row >= stoneLevel) {
+                            world[row][col] = BLOCK_TYPES.STONE;
+                        }
+                    }
+                }
+                
+                // Tambahkan beberapa pohon
+                addTree(Math.floor(numCols * 0.2), grassLevel - 1);
+                addTree(Math.floor(numCols * 0.75), grassLevel - 1);
+            }
+
+            function addTree(col, row) {
+                // Batang pohon
+                for (let i = 0; i < 4; i++) {
+                    if (row - i >= 0) world[row - i][col] = BLOCK_TYPES.WOOD;
+                }
+                
+                // Daun
+                let leafRow = row - 4;
+                if (leafRow < 0) leafRow = 0;
+                
+                for(let r = -2; r <= 0; r++) {
+                    for(let c = -2; c <= 2; c++) {
+                        if (r === -2 && (c === -2 || c === 2)) continue; // Sudut
+                        if (r === 0 && (c === -2 || c === 2)) continue; // Sudut
+                        
+                        let newRow = leafRow + r;
+                        let newCol = col + c;
+                        
+                        if(newRow >= 0 && newRow < numRows && newCol >= 0 && newCol < numCols) {
+                             if(world[newRow][newCol] === BLOCK_TYPES.SKY) {
+                                world[newRow][newCol] = BLOCK_TYPES.LEAVES;
+                             }
+                        }
+                    }
+                }
+            }
+
+            // --- Logika Menggambar ---
+
+            function drawWorld() {
+                // Bersihkan kanvas (gambar langit)
+                ctx.fillStyle = blockColors[BLOCK_TYPES.SKY];
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                for (let row = 0; row < numRows; row++) {
+                    for (let col = 0; col < numCols; col++) {
+                        const blockType = world[row][col];
+                        
+                        // Hanya gambar balok yang bukan langit
+                        if (blockType !== BLOCK_TYPES.SKY) {
+                            drawBlock(col, row, blockColors[blockType]);
+                        }
+                    }
+                }
+            }
+            
+            function drawBlock(col, row, color) {
+                // Isi balok
+                ctx.fillStyle = color;
+                ctx.fillRect(col * blockSize, row * blockSize, blockSize, blockSize);
+                
+                // Garis luar (outline) agar terlihat seperti pixel
+                ctx.strokeStyle = '#000'; // Warna outline hitam
+                ctx.lineWidth = 1;
+                ctx.strokeRect(col * blockSize, row * blockSize, blockSize, blockSize);
+            }
+
+            // --- Kontrol Pemain ---
+
+            function handleMouse(event) {
+                // Hanya jalankan jika tombol kiri (1) atau kanan (2) ditekan
+                if (event.buttons !== 1 && event.buttons !== 2) return;
+
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                const col = Math.floor(x / blockSize);
+                const row = Math.floor(y / blockSize);
+
+                // Pastikan masih di dalam batas dunia
+                if (col < 0 || col >= numCols || row < 0 || row >= numRows) {
+                    return;
+                }
+
+                // Tombol Kiri (event.buttons === 1) -> Hancurkan
+                if (event.buttons === 1) {
+                    if (world[row][col] !== BLOCK_TYPES.SKY) {
+                        world[row][col] = BLOCK_TYPES.SKY;
+                        drawWorld(); // Gambar ulang dunia
+                    }
+                }
+                
+                // Tombol Kanan (event.buttons === 2) -> Pasang
+                if (event.buttons === 2) {
+                    if (world[row][col] === BLOCK_TYPES.SKY) {
+                        world[row][col] = currentBlockType;
+                        drawWorld(); // Gambar ulang dunia
+                    }
+                }
+            }
+
+            // --- UI Hotbar ---
+
+            function createHotbar() {
+                placeableBlocks.forEach((type, index) => {
+                    const slot = document.createElement('div');
+                    slot.className = 'slot';
+                    slot.style.backgroundColor = blockColors[type];
+                    slot.dataset.type = type; // Simpan tipe balok di data attribute
+                    
+                    slot.addEventListener('click', () => {
+                        selectBlock(type, slot);
+                    });
+                    
+                    hotbar.appendChild(slot);
+                    
+                    // Pilih balok pertama secara default
+                    if (index === 0) {
+                        selectBlock(type, slot);
+                    }
+                });
+            }
+            
+            function selectBlock(type, element) {
+                currentBlockType = parseInt(type);
+                
+                // Hapus seleksi dari semua slot
+                document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+                
+                // Tambahkan seleksi ke slot yang diklik
+                element.classList.add('selected');
+            }
+
+            // Mulai game!
+            init();
+        };
+    </script>
+</body>
+</html>
