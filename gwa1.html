@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GWA: Web City</title>
+    <title>GWC: Grand Web City</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -59,7 +59,7 @@
     <!-- UI Layer -->
     <div class="fixed top-0 left-0 w-full p-4 md:p-6 pointer-events-none z-10 flex justify-between items-start">
         <div class="glass-panel text-white px-6 py-3 rounded-2xl inline-block border-l-4 border-l-indigo-500 shadow-lg transition-all duration-1000" id="ui-header">
-            <h1 class="font-black text-2xl tracking-tight"><span class="text-indigo-400 transition-colors duration-1000" id="ui-title-color">GWA</span> <span class="text-slate-200 font-normal" id="ui-subtitle">City Hub</span></h1>
+            <h1 class="font-black text-2xl tracking-tight"><span class="text-indigo-400 transition-colors duration-1000" id="ui-title-color">GWC</span> <span class="text-slate-200 font-normal" id="ui-subtitle">City Hub</span></h1>
             <div class="flex items-center gap-2 mt-1">
                 <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
                 <p class="text-[11px] text-slate-300 uppercase tracking-widest font-bold" id="ui-time-text">SIANG HARI</p>
@@ -73,7 +73,7 @@
                         <i data-lucide="coins" size="20"></i>
                     </div>
                     <div>
-                        <p class="text-[10px] text-slate-400 mb-0 leading-none tracking-widest">GWA POIN</p>
+                        <p class="text-[10px] text-slate-400 mb-0 leading-none tracking-widest">GWC POIN</p>
                         <p id="ui-points" class="font-black text-xl text-amber-400 leading-none mt-1">0</p>
                     </div>
                 </div>
@@ -112,8 +112,10 @@
         </div>
     </div>
 
+    <!-- Toast Notifications -->
     <div id="toast-container" class="fixed top-24 left-1/2 transform -translate-x-1/2 z-[70] flex flex-col gap-2 pointer-events-none"></div>
 
+    <!-- Mobile Controls -->
     <div id="joystick" class="joystick-base hidden md:hidden"><div id="stick" class="joystick-stick"></div></div>
 
     <button id="btn-enter" class="action-btn hidden-action">ENTER</button>
@@ -350,7 +352,7 @@
         </div>
     </div>
 
-    <!-- Modal Iframe (Games) -->
+    <!-- Modal Iframe (Games) - Fullscreen No Frame -->
     <div id="game-modal" class="fixed inset-0 z-[100] bg-black hidden opacity-0 flex-col transition-opacity duration-300">
         <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-black/80 to-transparent flex items-start justify-between px-4 pt-4 md:px-8 md:pt-6 z-20 pointer-events-none">
             <div class="flex items-center gap-3 bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-lg pointer-events-auto">
@@ -445,9 +447,9 @@
     ];
 
     const MapObjects = [
-        { id: 'warnet', type: 'building', name: "NetCafe 01", x: 1400, y: 1200, w: 260, h: 220, color: '#1e293b', roof: '#0f172a', accent: '#38bdf8', url: 'https://codepen.io/fadhlurrohmanfachri1-cpu/embed/019d95e6-3ded-703b-a5f4-d2da96b54f67?default-tab=result&theme-id=dark', door: {x: 1530, y: 1420, w: 70, h: 20} },
-        { id: 'gojek', type: 'building', name: "Drift HQ", x: 900, y: 1250, w: 200, h: 170, color: '#1e293b', roof: '#064e3b', accent: '#10b981', url: 'https://codepen.io/Athanaya-Sakhy-Abdillah/embed/019d9eb9-cfca-776b-b52f-9b6ef241dc07?default-tab=result&theme-id=dark', door: {x: 1000, y: 1420, w: 60, h: 20} },
-        { id: 'dev', type: 'building', name: "Studio Dev", x: 1150, y: 500, w: 220, h: 200, color: '#1e293b', roof: '#2e1065', accent: '#8b5cf6', url: 'https://codepen.io/Akira-lol/embed/019d9e88-0365-77ca-a6ec-a3d595436bce?default-tab=result&theme-id=dark', door: {x: 1250, y: 700, w: 60, h: 20} },
+        { id: 'warnet', type: 'building', name: "Cafe Warnet", x: 1400, y: 1200, w: 260, h: 220, color: '#1e293b', roof: '#0f172a', accent: '#38bdf8', url: 'https://codepen.io/fadhlurrohmanfachri1-cpu/embed/019d95e6-3ded-703b-a5f4-d2da96b54f67?default-tab=result&theme-id=dark', door: {x: 1530, y: 1420, w: 70, h: 20} },
+        { id: 'gojek', type: 'building', name: "Gocar", x: 900, y: 1250, w: 200, h: 170, color: '#1e293b', roof: '#064e3b', accent: '#10b981', url: 'https://codepen.io/Athanaya-Sakhy-Abdillah/embed/019d9eb9-cfca-776b-b52f-9b6ef241dc07?default-tab=result&theme-id=dark', door: {x: 1000, y: 1420, w: 60, h: 20} },
+        { id: 'dev', type: 'building', name: "Studio Youtuber", x: 1150, y: 500, w: 220, h: 200, color: '#1e293b', roof: '#2e1065', accent: '#8b5cf6', url: 'https://codepen.io/Akira-lol/embed/019d9e88-0365-77ca-a6ec-a3d595436bce?default-tab=result&theme-id=dark', door: {x: 1250, y: 700, w: 60, h: 20} },
         { id: 'mixue', type: 'shop', name: "Mixue Ramen", x: 1550, y: 500, w: 200, h: 220, color: '#ef4444', roof: '#f8fafc', accent: '#fca5a5', door: {x: 1620, y: 700, w: 60, h: 20} },
         { id: 'fishing', type: 'zone', name: "Deep Blue", x: 600, y: 2400, w: 2000, h: 800, color: Palette.sand, url: 'https://codepen.io/Ibad-Fadhl-Rayyan/embed/019da0dd-bb13-70af-b9e1-203ada2227df?default-tab=result&theme-id=dark', interactRadius: 250 },
         { id: 'sawit', type: 'zone', name: "Agro Sector", x: 100, y: 800, w: 500, h: 1000, color: '#4d7c0f', url: 'https://codepen.io/Athanaya-Sakhy-Abdillah/embed/019d9ef5-0a6e-7125-9f85-a54bed0a5087?default-tab=result&theme-id=dark', interactRadius: 250 },
